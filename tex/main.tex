@@ -1,0 +1,83 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{titling}
+
+\title{DoorDash}
+\author{Charles Lyman}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{The Problem}
+    The pay $P$ that an employee receives for their work can be modeled as a function of their time worked in hours, $t$, and the rate they are paid, $r$ looking something like this
+    
+        $$P=rt$$
+        
+\noindent When doordashing however, the rate $r$ varies between orders. For a doordasher the money $P$ a dasher makes is a sum of all the orders done in the time dashing. The pay of an order in dollars, $P_o$, is similarly modeled as a function of the order rate in dollars per hour, $r_o$, and order time in hours, $t_o$ as follows
+
+        $$P_o=r_o*t_o$$
+	
+\noindent If I am going to assume that $r_o$ varies between orders, then it would also be reasonable to assume that the graph of the frequency of different values of $r_o$ would resemble something of a bell curve. In order to maximize the pay they receive, a dasher would want to take orders with the highest pay rate and minimum wait time. The question that I hope to asnwer is what minimum value $r_o$ should a dasher to set to make the most money possible while working?
+
+\section*{Understanding an Order}
+
+There are really on 3 important inputs to an order and they are:
+\begin{enumerate}
+    \item Pay
+    \item Restaurant
+    \item Destination
+\end{enumerate}
+
+\noindent Those 3 inputs result in a few different qualities of an order, namely
+\begin{enumerate}
+    \item Distance
+    \item Pickup Time
+    \item Delivery Time
+    \item Avg. Speed
+    \item Dollars / Mile
+\end{enumerate}
+\noindent I think it's important to understand the inputs and qualities of each data point in order to enhance the analysis
+
+\section*{Modeling $r_o$}
+If the pay rate, r, is measured in dollars per hour then r will increase as dollars increases and hours decreases. 
+\\
+\\
+\noindent Wage rate could be calculated as:
+
+	$$r_o= \frac{dollars}{mile}* \frac{miles}{hour}$$
+	
+\noindent An additional factor to consider is the frequency of orders with optimal values of $r_o$. This is because time spent working, $t$, can be written as \\ 
+$t=(hours\;dashing - hours\;waiting)$ and $hours\;waiting$ certainly will increase as we wait for higher values of $r$. This makes sense as $r$ and $t$ should have an inverse relationship in the equation $P=rt$. \\
+\\
+\noindent So, Pay could be modeled as:
+
+$$P=\left(\frac{dollars}{mile}*\frac{miles}{hour}\right)*(hours\;dashing - hours\;waiting)$$
+
+\section*{Accounting for Varying Frequencies of $r_o$}
+
+Orders will come with varying rates of  $r_o$. It is natural to assume that higher values of  $r_o$  have lower frequencies and lower values of  $r_o$  have higher frequencies. To be able to make the best selection of orders, I need to find the range of values for  $r_o$  that return the highest net pay, P. In short, I do not want to spend time doing low-paying orders when I could be doing high-paying orders but I also do not want to be waiting for high-paying orders when I could be making money with low-paying orders.
+\newline
+\newline
+\noindent Suppose there are two orders $O_1$ and $O_2$ with different values of $r_o$, and similar times to complete each order.  The pay of both models could be modeled like this, 
+\newline \newline
+\begin{align*}
+    P_1&=(O_1)*(hours\;dashing - hours\;waiting) \\
+    P_2&=(O_2)*(hours\;dashing - hours\;waiting)
+\end{align*}
+
+Higher order frequency results in less time waiting, and more time working. Assuming that order frequency takes the shape of a bell curve as a function of  $r_o$  then we could say that the time spent working, t, is equal to this equation:
+
+$$t = \left(\frac{orders}{hour}\right) * t_o$$
+
+\noindent where $t_o$  is the time required to complete the order in hours. I should note that because everything but $r_o$ is constant in my example right now in my example, one order can be interpreted as a fixed unit of time, x hours. So the equation above can be read as x hours working / hours waiting * hours dashing
+\newline
+\newline
+The next step is modeling frequency of orders according to values of $r_o$, and the time requirement for an order given the pickup and drop off location
+
+
+
+
+\end{document}
