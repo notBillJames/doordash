@@ -12,6 +12,15 @@ Information that could be in a DoorDash order:
 """
 
 
+# FIXME
+def format_query(dct):
+    if dct['destination'] == None:
+        query = '''
+        INSERT INTO orders VALUES
+        
+        '''
+
+
 # start_order returns dict with all order data other than dropoff time
 def start_order():
     dct = {}
@@ -22,9 +31,16 @@ def start_order():
     else:
         dct["destination"] = a.title()
     dct["distance"] = float(input("Distance :"))
-    dct["pickup_time"] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+    dct["accept_time"] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
     return dct
 
 
-def close_order():
-    pass
+# Function to record pickup time of order
+def pickup_order(dct):
+    dct["pickup_time"] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+
+
+# Function to record dropoff time of order and commit data to table
+def close_order(dct, con):
+    dct["dropoff_time"] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+    if dct["destination"] = 
