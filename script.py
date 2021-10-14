@@ -1,4 +1,6 @@
 from datetime import datetime
+import sqlalchemy as sql
+import pandas as pd
 
 """
 Information that could be in a DoorDash order:
@@ -10,15 +12,6 @@ Information that could be in a DoorDash order:
     6. Pickup Time
     7. Dropoff Time
 """
-
-
-# FIXME
-def format_query(dct):
-    if dct['destination'] == None:
-        query = '''
-        INSERT INTO orders VALUES
-        
-        '''
 
 
 # start_order returns dict with all order data other than dropoff time
@@ -42,5 +35,8 @@ def pickup_order(dct):
 
 # Function to record dropoff time of order and commit data to table
 def close_order(dct, con):
-    dct["dropoff_time"] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
-    if dct["destination"] = 
+    dct['dropoff_time'] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+    df = pd.DataFrame.from_dict(dct, orient='columns')
+    e = sql.create_engine("sqlite://doordash.db")
+    with e.connect() as conn:
+        df.to_sql('orders', conn)
