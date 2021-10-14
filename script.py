@@ -13,10 +13,11 @@ Information that could be in a DoorDash order:
     7. Dropoff Time
 """
 
-
+class Dash:
+    def __init__(self) -> None:
 # start_order returns dict with all order data other than dropoff time
-def start_order(dct):
-    dct = {}
+def start_order(dct_in):
+    dct = dct_in
     dct["restaurant"] = input("Restaurant :").title()
     a = input("Destination :")
     if a == "":
@@ -25,17 +26,22 @@ def start_order(dct):
         dct["destination"] = a.title()
     dct["distance"] = float(input("Distance :"))
     dct["accept_time"] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+    return dct
 
 
 # Function to record pickup time of order
-def pickup_order(dct):
+def pickup_order(dct_in):
+    dct = dct_in
     dct["pickup_time"] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+    return dct
 
 
 # Function to record dropoff time of order and commit data to table
-def close_order(dct, con):
+def close_order(dct_in):
+    dct = dct_in
     dct['dropoff_time'] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
     df = pd.DataFrame.from_dict(dct, orient='columns')
     e = sql.create_engine("sqlite://doordash.db")
     with e.connect() as conn:
-        df.to_sql('orders', conn)
+        df.to_sql('orders', con=conn, if_exists='replace', index=False)
+    return dct
