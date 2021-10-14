@@ -15,7 +15,7 @@ Information that could be in a DoorDash order:
 
 
 # start_order returns dict with all order data other than dropoff time
-def start_order():
+def start_order(dct):
     dct = {}
     dct["restaurant"] = input("Restaurant :").title()
     a = input("Destination :")
@@ -25,7 +25,6 @@ def start_order():
         dct["destination"] = a.title()
     dct["distance"] = float(input("Distance :"))
     dct["accept_time"] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
-    return dct
 
 
 # Function to record pickup time of order
