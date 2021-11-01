@@ -1,10 +1,60 @@
-'''
-Information that could be in a DoorDash order:
-    1. Restaurant
-    2. Distance
-    3. Direction
-    4. Pay
-    5. Tip?
-    6. Pickup Time
-    7. Dropoff Time
-'''
+from datetime import datetime
+import sqlalchemy as sql
+import pandas as pd
+
+
+class Dash:
+    def __init__(self) -> None:
+        self.start = datetime.now()
+        self.orders = []
+
+
+class Order:
+    def __init__(self) -> None:
+        self.order_info = {
+            "restaurant": [],
+            "destination": [],
+            "distance": [],
+            "accept_time": [],
+            "pickup_time": [],
+            "dropoff_time": []
+            }
+
+    def start_order(self):
+        self.order_info["restaurant"].append(input("Restaurant :").title())
+        a = input("Destination :")
+        if a == "":
+            self.order_info["destination"].append(None)
+        else:
+            self.order_info["destination"].append(a.title())
+        self.order_info["distance"].append(float(input("Distance :")))
+        time_now = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+        self.order_info["accept_time"].append(time_now)
+
+    # Function to record pickup time of order
+    def pickup_order(self):
+        time_now = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+        self.order_info["pickup_time"].append(time_now)
+
+    # Function to record dropoff time of order and commit data to table
+    def close_order(self):
+        time_now = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+        self.order_info['dropoff_time'].append(time_now)
+        df = pd.DataFrame.from_dict(self.order_info, orient='columns')
+        e = sql.create_engine("sqlite://doordash.db")
+        with e.connect() as conn:
+            df.to_sql('order_info', con=conn, if_exists='replace', index=False)
+
+
+"""
+DROP TABLE orders;
+CREATE TABLE orders (
+    id INTEGER PRIMARY KEY,
+    restaurant TEXT DEFAULT NULL,
+    destination TEXT DEFAULT NULL,
+    distance REAL DEFAULT NULL,
+    accept_time TEXT DEFAULT NULL,
+    pickup_time TEXT DEFAULT NULL,
+    dropoff_time TEXT DEFAULT NULL
+);
+"""
