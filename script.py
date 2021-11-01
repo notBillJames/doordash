@@ -18,7 +18,7 @@ class Order:
             "accept_time": [],
             "pickup_time": [],
             "dropoff_time": []
-            }
+        }
 
     def start_order(self):
         self.order_info["restaurant"].append(input("Restaurant :").title())
