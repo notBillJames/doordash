@@ -2,46 +2,59 @@ from datetime import datetime
 import sqlalchemy as sql
 import pandas as pd
 
-"""
-Information that could be in a DoorDash order:
-    1. Restaurant
-    2. Distance
-    3. Direction
-    4. Pay
-    5. Tip?
-    6. Pickup Time
-    7. Dropoff Time
-"""
 
 class Dash:
     def __init__(self) -> None:
-# start_order returns dict with all order data other than dropoff time
-def start_order(dct_in):
-    dct = dct_in
-    dct["restaurant"] = input("Restaurant :").title()
-    a = input("Destination :")
-    if a == "":
-        dct["destination"] = None
-    else:
-        dct["destination"] = a.title()
-    dct["distance"] = float(input("Distance :"))
-    dct["accept_time"] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
-    return dct
+        self.start = datetime.now()
+        self.orders = []
 
 
-# Function to record pickup time of order
-def pickup_order(dct_in):
-    dct = dct_in
-    dct["pickup_time"] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
-    return dct
+class Order:
+    def __init__(self) -> None:
+        self.order_info = {
+            "restaurant": [],
+            "destination": [],
+            "distance": [],
+            "accept_time": [],
+            "pickup_time": [],
+            "dropoff_time": []
+            }
+
+    def start_order(self):
+        self.order_info["restaurant"].append(input("Restaurant :").title())
+        a = input("Destination :")
+        if a == "":
+            self.order_info["destination"].append(None)
+        else:
+            self.order_info["destination"].append(a.title())
+        self.order_info["distance"].append(float(input("Distance :")))
+        time_now = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+        self.order_info["accept_time"].append(time_now)
+
+    # Function to record pickup time of order
+    def pickup_order(self):
+        time_now = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+        self.order_info["pickup_time"].append(time_now)
+
+    # Function to record dropoff time of order and commit data to table
+    def close_order(self):
+        time_now = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+        self.order_info['dropoff_time'].append(time_now)
+        df = pd.DataFrame.from_dict(self.order_info, orient='columns')
+        e = sql.create_engine("sqlite://doordash.db")
+        with e.connect() as conn:
+            df.to_sql('order_info', con=conn, if_exists='replace', index=False)
 
 
-# Function to record dropoff time of order and commit data to table
-def close_order(dct_in):
-    dct = dct_in
-    dct['dropoff_time'] = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
-    df = pd.DataFrame.from_dict(dct, orient='columns')
-    e = sql.create_engine("sqlite://doordash.db")
-    with e.connect() as conn:
-        df.to_sql('orders', con=conn, if_exists='replace', index=False)
-    return dct
+"""
+DROP TABLE orders;
+CREATE TABLE orders (
+    id INTEGER PRIMARY KEY,
+    restaurant TEXT DEFAULT NULL,
+    destination TEXT DEFAULT NULL,
+    distance REAL DEFAULT NULL,
+    accept_time TEXT DEFAULT NULL,
+    pickup_time TEXT DEFAULT NULL,
+    dropoff_time TEXT DEFAULT NULL
+);
+"""
