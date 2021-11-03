@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def time_now():
-    now = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     return now
 
 
