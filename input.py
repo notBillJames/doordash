@@ -8,15 +8,11 @@ def time_now():
     return now
 
 
+# Dash class creates and stores order information, then commits it to db
 class Dash:
     def __init__(self) -> None:
         self.start = datetime.now()
-        self.orders = []
-
-
-class Order:
-    def __init__(self) -> None:
-        self.order_info = {
+        self.orders = {
             "restaurant": [],
             "destination": [],
             "distance": [],
@@ -25,19 +21,22 @@ class Order:
             "dropoff_time": []
         }
 
+    # Function to record initial order information
     def start_order(self):
-        for key in list(self.order_info.keys())[:3]:
-            self.order_info[key].append(input(f"{key}: "))
-        self.order_info["accept_time"].append(time_now())
+        for key in list(self.orders.keys())[:3]:
+            self.orders[key].append(input(f"{key.title()}: "))
+        self.orders["accept_time"].append(time_now())
 
     # Function to record pickup time of order
     def pickup_order(self):
-        self.order_info["pickup_time"].append(time_now())
+        self.orders["pickup_time"].append(time_now())
 
     # Function to record dropoff time of order and commit data to table
-    def close_order(self):
-        self.order_info['dropoff_time'].append(time_now())
-        df = pd.DataFrame.from_dict(self.order_info, orient='columns')
-        e = sql.create_engine("sqlite://")
+    def dropoff_order(self):
+        self.orders['dropoff_time'].append(time_now())
+
+    def commit_orders(self):
+        df = pd.DataFrame.from_dict(self.orders, orient='columns')
+        e = sql.create_engine("sqlite:///doordash.db")
         with e.connect() as conn:
-            df.to_sql('order_info', con=conn, if_exists='replace', index=False)
+            df.to_sql('orders', con=conn, if_exists='append', index=False)
