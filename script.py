@@ -20,13 +20,14 @@ class Order:
             "dropoff_time": []
             }
 
+        # Keys needed for Nominatim's geocode()
+        self.geopy_dict_keys = ["street", "city", "state", "country",
+                                "postalcode"]
+
     def start_order(self):
-        self.order_info["restaurant"].append(input("Restaurant :").title())
-        a = input("Destination :")
-        if a == "":
-            self.order_info["destination"].append(None)
-        else:
-            self.order_info["destination"].append(a.title())
+        for val in ["restaurant", "destination"]:
+            for key in self.geopy_dict_keys:
+                self.order_info[val][key] = input(f"{val.title()} {key}")
         self.order_info["distance"].append(float(input("Distance :")))
         time_now = datetime.now().strftime("%d/%m/%Y %H:%M.%S")
         self.order_info["accept_time"].append(time_now)
