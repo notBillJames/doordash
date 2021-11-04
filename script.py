@@ -23,9 +23,9 @@ class Dash:
 
     # Function to record initial order information
     def start_order(self):
+        self.orders["accept_time"].append(time_now())
         for key in list(self.orders.keys())[:3]:
             self.orders[key].append(input(f"{key.title()}: "))
-        self.orders["accept_time"].append(time_now())
 
     # Function to record pickup time of order
     def pickup_order(self):
