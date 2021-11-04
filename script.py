@@ -13,7 +13,6 @@ class Dash:
     def __init__(self) -> None:
         self.start = datetime.now()
         self.orders = {
-            "accept_location": [],
             "restaurant": [],
             "destination": [],
             "distance": [],
