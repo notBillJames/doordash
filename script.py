@@ -13,6 +13,7 @@ class Dash:
     def __init__(self) -> None:
         self.start = datetime.now()
         self.orders = {
+            "accept_location": [],
             "restaurant": [],
             "destination": [],
             "distance": [],
@@ -23,7 +24,7 @@ class Dash:
 
     # Function to record initial order information
     def start_order(self):
-        for key in list(self.orders.keys())[:3]:
+        for key in list(self.orders.keys())[:4]:
             self.orders[key].append(input(f"{key.title()}: "))
         self.orders["accept_time"].append(time_now())
 
