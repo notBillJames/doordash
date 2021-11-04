@@ -23,7 +23,7 @@ class Dash:
 
     # Function to record initial order information
     def start_order(self):
-        for key in list(self.orders.keys())[:4]:
+        for key in list(self.orders.keys())[:3]:
             self.orders[key].append(input(f"{key.title()}: "))
         self.orders["accept_time"].append(time_now())
 
@@ -40,3 +40,11 @@ class Dash:
         e = sql.create_engine("sqlite:///doordash.db")
         with e.connect() as conn:
             df.to_sql('orders', con=conn, if_exists='append', index=False)
+        self.orders = {
+            "restaurant": [],
+            "destination": [],
+            "distance": [],
+            "accept_time": [],
+            "pickup_time": [],
+            "dropoff_time": []
+        }
