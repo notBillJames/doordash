@@ -10,16 +10,19 @@ def time_now():
 
 # Dash class creates and stores order information, then commits it to db
 class Dash:
-    def __init__(self) -> None:
+    def __init__(self, conn="sqlite:///doordash.db") -> None:
+        self.conn = conn
+        self.commit = False
         self.dash_info = {
             'start': [time_now()],
             'location': [input('Where are you dashing? ').lower()],
-            'bonus': [int(input('Enter any bonuses '))]
+            'promo': [int(input('Enter any promo '))]
         }
         self.orders = {
             'restaurant': [],
             'destination': [],
             'distance': [],
+            'pay': [],
             'accept_time': [],
             'pickup_time': [],
             'dropoff_time': []
@@ -28,8 +31,13 @@ class Dash:
     # Function to record initial order information
     def start_order(self):
         self.orders['accept_time'].append(time_now())
-        for key in list(self.orders.keys())[:3]:
+        for key in list(self.orders.keys())[:2]:
             self.orders[key].append(input(f'{key.title()}: '))
+        for key in list(self.orders.keys())[2:4]:
+            try:
+                self.orders[key].append(float(input(f'{key.title()}: ')))
+            except ValueError:
+                print(f'{key.title()} needs to be a float')
 
     # Function to record pickup time of order
     def pickup_order(self):
@@ -41,17 +49,24 @@ class Dash:
 
     def commit_orders(self):
         orders = pd.DataFrame.from_dict(self.orders, orient='columns')
-        dashes = pd.DataFrame.from_dict(self.dash_info, orient='columns')
-        e = sql.create_engine('sqlite:///doordash.db')
-        with e.connect() as conn:
-            orders.to_sql('orders', con=conn, if_exists='append', index=False)
-            dashes.to_sql('dashes', con=conn, if_exists='append', index=False)
+        e = sql.create_engine(self.conn)
+        with e.connect() as db:
+            orders.to_sql('orders', con=db, if_exists='append', index=False)
 
         self.orders = {
             'restaurant': [],
             'destination': [],
             'distance': [],
+            'pay': [],
             'accept_time': [],
             'pickup_time': [],
             'dropoff_time': []
         }
+
+    def commit_dashes(self):
+        self.dash_info['total_pay'] = sum(self.orders['pay'])
+        self.dash_info['gas_cost'] = float(input('Gas Cost: '))
+        dashes = pd.DataFrame.from_dict(self.dash_info, orient='columns')
+        e = sql.create_engine(self.conn)
+        with e.connect() as db:
+            dashes.to_sql('dashes', con=db, if_exists='append', index=False)
