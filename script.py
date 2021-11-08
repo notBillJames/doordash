@@ -15,6 +15,7 @@ class Dash:
         self.commit = False
         self.dash_info = {
             'start': [time_now()],
+            'end': [],
             'location': [input('Where are you dashing? ').lower()],
             'promo': [int(input('Enter any promo '))]
         }
@@ -64,6 +65,7 @@ class Dash:
         }
 
     def commit_dashes(self):
+        self.dash_info['end'].append(time_now())
         self.dash_info['total_pay'] = sum(self.orders['pay'])
         self.dash_info['gas_cost'] = float(input('Gas Cost: '))
         dashes = pd.DataFrame.from_dict(self.dash_info, orient='columns')
