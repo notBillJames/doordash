@@ -17,7 +17,7 @@ class Dash:
             'start': [time_now()],
             'end': [],
             'location': [input('Where are you dashing? ').lower()],
-            'promo': [int(input('Enter any promo '))]
+            'promo': [int(input('Enter Promo if any, if none enter 0 '))]
         }
         self.orders = {
             'restaurant': [],
