@@ -29,8 +29,9 @@ def login():
 
 
 @auth.route('/logout')
+@login_required
 def logout():
-    return render_template('home.html')
+    return redirect(url_for('auth.login'))
 
 
 @auth.route('/signup', methods=['GET', 'POST'])
