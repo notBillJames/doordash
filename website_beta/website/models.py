@@ -23,7 +23,7 @@ class User(db.Model, UserMixin):
 class Dash(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start = db.Column(db.DateTime(timezone=True), default=func.now())
-    end = db.Column(db.DateTime(timezone=True))
+    end = db.Column(db.DateTime(timezone=True), default=func.now())
     location = db.Column(db.String(150))
     promo = db.Column(db.Integer, default=0)
     total_pay = db.Column(db.Integer)
