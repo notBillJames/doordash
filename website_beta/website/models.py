@@ -16,6 +16,8 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(150))
     first_name = db.Column(db.String(150))
     notes = db.relationship('Note')
+    dashses = db.relationship('Dash')
+    orders = db.relationship('Order')
 
 
 class Dash(db.Model):
@@ -26,7 +28,9 @@ class Dash(db.Model):
     promo = db.Column(db.Integer, default=0)
     total_pay = db.Column(db.Integer)
     gas_cost = db.Column(db.Integer)
+    total_miles = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    orders = db.relationship('Orders')
 
 
 class Order(db.Model):
@@ -38,3 +42,4 @@ class Order(db.Model):
     pickup_time = db.Column(db.DateTime(timezone=True), defualt=func.now())
     dropoff_time = db.Column(db.DateTime(timezone=True), default=func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    dash_id = db.Column(db.Integer, db.ForeignKey('dash.id'))
