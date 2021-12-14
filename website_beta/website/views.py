@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, flash, request, jsonify
 from flask_login import login_required, current_user
-from .models import Note
+from .models import Dash, Order, Note
 from . import db
 from sqlalchemy.sql import func
 import json
@@ -28,9 +28,22 @@ def home():
     return render_template('home.html', user=current_user)
 
 
-@views.route('/dash-start', methods=['GET', 'POST'])
+@views.route('/dash', methods=['GET', 'POST'])
 @login_required
 def dash():
+    if request.method == 'POST':
+        location = request.form.get('location')
+        promo = request.form.get('promo')
+        dash = Dash(
+            location=location,
+            promo=promo
+        )
+
+        db.session.add(dash)
+        db.session.commit()
+
+        return render_template('dash_start.html', user=current_user, dash=dash)
+
     return render_template('dash_start.html', user=current_user)
 
 

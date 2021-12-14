@@ -30,7 +30,7 @@ class Dash(db.Model):
     gas_cost = db.Column(db.Integer)
     total_miles = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    orders = db.relationship('Orders')
+    orders = db.relationship('Order')
 
 
 class Order(db.Model):
@@ -39,7 +39,7 @@ class Order(db.Model):
     distance = db.Column(db.Integer)
     pay = db.Column(db.Integer)
     accept_time = db.Column(db.DateTime(timezone=True), default=func.now())
-    pickup_time = db.Column(db.DateTime(timezone=True), defualt=func.now())
+    pickup_time = db.Column(db.DateTime(timezone=True), default=func.now())
     dropoff_time = db.Column(db.DateTime(timezone=True), default=func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     dash_id = db.Column(db.Integer, db.ForeignKey('dash.id'))
