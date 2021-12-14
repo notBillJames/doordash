@@ -1,8 +1,8 @@
-import re
 from flask import Blueprint, render_template, flash, request, jsonify
 from flask_login import login_required, current_user
 from .models import Note
 from . import db
+from sqlalchemy.sql import func
 import json
 
 views = Blueprint('views', __name__)
@@ -26,6 +26,12 @@ def home():
             flash('Note added', category='success')
 
     return render_template('home.html', user=current_user)
+
+
+@views.route('/dash-start', methods=['GET', 'POST'])
+@login_required
+def dash():
+    return render_template('dash_start.html', user=current_user)
 
 
 @views.route('/delete-note', methods=['POST'])
