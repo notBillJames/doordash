@@ -20,10 +20,22 @@ class User(db.Model, UserMixin):
     orders = db.relationship('Order')
 
 
+class PendingOrders(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    restaurant = db.Column(db.String(200))
+    distance = db.Column(db.Integer)
+    pay = db.Column(db.Integer)
+    accept_time = db.Column(db.DateTime(timezone=True))
+    pickup_time = db.Column(db.DateTime(timezone=True))
+    dropoff_time = db.Column(db.DateTime(timezone=True))
+    user_id = db.Column(db.Integer)
+    dash_id = db.Column(db.Integer)
+
+
 class Dash(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    start = db.Column(db.DateTime(timezone=True), default=func.now())
-    end = db.Column(db.DateTime(timezone=True), default=func.now())
+    start = db.Column(db.DateTime(timezone=True))
+    end = db.Column(db.DateTime(timezone=True))
     location = db.Column(db.String(150))
     promo = db.Column(db.Integer, default=0)
     total_pay = db.Column(db.Integer)
@@ -38,8 +50,8 @@ class Order(db.Model):
     restaurant = db.Column(db.String(200))
     distance = db.Column(db.Integer)
     pay = db.Column(db.Integer)
-    accept_time = db.Column(db.DateTime(timezone=True), default=func.now())
-    pickup_time = db.Column(db.DateTime(timezone=True), default=func.now())
-    dropoff_time = db.Column(db.DateTime(timezone=True), default=func.now())
+    accept_time = db.Column(db.DateTime(timezone=True))
+    pickup_time = db.Column(db.DateTime(timezone=True))
+    dropoff_time = db.Column(db.DateTime(timezone=True))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    dash_id = db.Column(db.Integer, db.ForeignKey('dash.id'))
+    dash_id = db.Column(db.Integer, db.ForeignKey('dash.start'))
