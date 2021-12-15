@@ -1,11 +1,26 @@
-from flask import Blueprint, render_template, flash, request, jsonify
+from flask import Blueprint, render_template, flash, request, session, jsonify
+from flask.helpers import url_for
 from flask_login import login_required, current_user
+from werkzeug.utils import redirect
 from .models import Dash, Order, Note
 from . import db
-from sqlalchemy.sql import func
+from datetime import datetime
 import json
+import functools
 
 views = Blueprint('views', __name__)
+
+
+def session_started(view):
+    # Wrapper to check if a dashing session has been started
+    @functools.wraps(view)
+    def wrapped_view(*args, **kwargs):
+        if session['dashStart'] is None:
+            return redirect(url_for('views.start_dashing'))
+
+        return view(*args, **kwargs)
+
+    return wrapped_view
 
 
 @views.route('/', methods=['GET', 'POST'])
@@ -28,23 +43,27 @@ def home():
     return render_template('home.html', user=current_user)
 
 
-@views.route('/dash', methods=['GET', 'POST'])
+@views.route('/start-dashing', methods=['GET', 'POST'])
 @login_required
-def dash():
+def start_dashing():
     if request.method == 'POST':
-        location = request.form.get('location')
-        promo = request.form.get('promo')
-        dash = Dash(
-            location=location,
-            promo=promo
+        session['dashLocation'] = request.form.get('location')
+        session['dashPromo'] = request.form.get('promo')
+        session['dashStart'] = datetime.strftime(
+            datetime.now(),
+            '%Y-%m-%d %H:%M%S'
         )
 
-        db.session.add(dash)
-        db.session.commit()
+        return redirect(url_for('views.log_order'))
 
-        return render_template('dash_start.html', user=current_user, dash=dash)
+    return render_template('start_dashing.html', user=current_user)
 
-    return render_template('dash_start.html', user=current_user)
+
+@views.route('/log-order', methods=['GET', 'POST'])
+@login_required
+@session_started
+def log_order():
+    return render_template('log_order.html', user=current_user)
 
 
 @views.route('/delete-note', methods=['POST'])
