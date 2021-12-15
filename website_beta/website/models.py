@@ -20,7 +20,7 @@ class User(db.Model, UserMixin):
     orders = db.relationship('Order')
 
 
-class PendingOrders(db.Model):
+class PendingOrder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     restaurant = db.Column(db.String(200))
     distance = db.Column(db.Integer)
@@ -48,6 +48,7 @@ class Dash(db.Model):
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     restaurant = db.Column(db.String(200))
+    destination = db.Column(db.String(200))
     distance = db.Column(db.Integer)
     pay = db.Column(db.Integer)
     accept_time = db.Column(db.DateTime(timezone=True))
