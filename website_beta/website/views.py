@@ -2,9 +2,8 @@ from flask import Blueprint, render_template, flash, request, session, jsonify
 from flask.helpers import url_for
 from flask_login import login_required, current_user
 from werkzeug.utils import redirect
-from .models import Dash, Order, Note, PendingOrder
+from .models import Dashes, Orders, Note, PendingOrders
 from . import db
-from datetime import datetime
 from sqlalchemy.sql import func
 import json
 import functools
@@ -52,7 +51,7 @@ def start_dashing():
         dashLocation = request.form.get('location')
         dashPromo = request.form.get('promo')
 
-        dash = Dash(
+        dash = Dashes(
             start=func.now(),
             location=dashLocation,
             promo=dashPromo
@@ -60,7 +59,8 @@ def start_dashing():
         db.session.add(dash)
         db.session.commit()
 
-        session['dashID'] = Dash.query.order_by(Dash.start.desc()).first().id
+        dash = Dashes.query.order_by(Dashes.start.desc())
+        session['dashID'] = dash.first().id
 
         return redirect(url_for('views.log_order'))
 
@@ -77,7 +77,7 @@ def log_order():
             destination = request.form.get('destination')
             distance = request.form.get('distance')
             pay = request.form.get('pay')
-            order = PendingOrder(
+            order = PendingOrders(
                 restaurant=restaurant,
                 destination=destination,
                 distance=distance,
@@ -88,21 +88,52 @@ def log_order():
             db.session.add(order)
             db.session.commit()
 
-            obj = PendingOrder.query.order_by(Dash.start.desc()).first()
-            session['orderID'] = obj.id
+            obj = PendingOrders.query.order_by(PendingOrders.accept_time.desc())
+            session['orderID'] = obj.first().id
+            print(session['orderID'])
 
             return redirect(url_for('views.pickup_order'))
 
     return render_template('log_order.html', user=current_user)
 
 
-'''
 @views.route('/pickup-order', methods=['GET', 'POST'])
 @login_required
 @session_started
 def pickup_order():
-    return render_template('pickup_order.html')
-'''
+    if request.method == 'POST':
+        order = PendingOrders.query.filter_by(id=session['orderID']).first()
+        order.pickup_time = func.now()
+        db.session.commit()
+
+        return redirect(url_for('views.deliver_order'))
+    return render_template('pickup_order.html', user=current_user)
+
+
+@views.route('/deliver-order', methods=['GET', 'POST'])
+@login_required
+@session_started
+def deliver_order():
+    if request.method == 'POST':
+        order = PendingOrders.query.filter_by(id=session['orderID']).first()
+        new_order = Orders(
+            restaurant=order.restaurant,
+            destination=order.destination,
+            distance=order.distance,
+            pay=order.distance,
+            accept_time=order.accept_time,
+            pickup_time=order.pickup_time,
+            dropoff_time=func.now(),
+            user_id=current_user.id,
+            dash_id=session['dashID']
+        )
+
+        db.session.add(new_order)
+        db.session.delete(order)
+        db.session.commit()
+
+        return redirect(url_for('views.home'))
+    return render_template('deliver_order.html', user=current_user)
 
 
 @views.route('/delete-note', methods=['POST'])
