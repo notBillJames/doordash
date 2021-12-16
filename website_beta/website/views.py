@@ -133,47 +133,6 @@ def order():
     )
 
 
-@views.route('/pickup-order', methods=['GET', 'POST'])
-@login_required
-@dash_started
-def pickup_order():
-    if request.method == 'POST':
-        order = PendingOrders.query.filter_by(id=session['orderID']).first()
-        order.pickup_time = func.now()
-        db.session.commit()
-
-        return redirect(url_for('views.deliver_order'))
-
-    return render_template('pickup_order.html', user=current_user)
-
-
-@views.route('/deliver-order', methods=['GET', 'POST'])
-@login_required
-@dash_started
-def deliver_order():
-    if request.method == 'POST':
-        order = PendingOrders.query.filter_by(id=session['orderID']).first()
-        new_order = Orders(
-            restaurant=order.restaurant,
-            destination=order.destination,
-            distance=order.distance,
-            pay=order.distance,
-            accept_time=order.accept_time,
-            pickup_time=order.pickup_time,
-            dropoff_time=func.now(),
-            user_id=current_user.id,
-            dash_id=session['dashID']
-        )
-
-        db.session.add(new_order)
-        db.session.delete(order)
-        db.session.commit()
-
-        session.pop('orderID', None)
-        return redirect(url_for('views.home'))
-    return render_template('deliver_order.html', user=current_user)
-
-
 @views.route('/delete-note', methods=['POST'])
 def delete_note():
     note = json.loads(request.data)
