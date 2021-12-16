@@ -73,7 +73,7 @@ def start_dashing():
 @dash_started
 def order():
     if request.method == 'POST':
-        if request.form['orderReceive']:
+        if request.form.get('orderReceive'):
             restaurant = request.form.get('restaurant')
             destination = request.form.get('destination')
             distance = request.form.get('distance')
@@ -91,16 +91,19 @@ def order():
 
             obj = PendingOrders.query.order_by(PendingOrders.accept_time.desc())
             session['orderID'] = obj.first().id
+            session['orderStage'] = 'pickup'
 
             return redirect(url_for('views.order'))
-        
-        elif request.form['orderPickup']:
+
+        elif request.form.get('orderPickup'):
             order = PendingOrders.query.filter_by(id=session['orderID']).first()
             order.pickup_time = func.now()
             db.session.commit()
 
-            return redirect(url_for('views.deliver_order'))
-        elif request.form['orderDeliver']:
+            session['orderStage'] = 'deliver'
+
+            return redirect(url_for('views.order'))
+        elif request.form.get('orderDeliver'):
             order = PendingOrders.query.filter_by(id=session['orderID']).first()
             new_order = Orders(
                 restaurant=order.restaurant,
@@ -118,10 +121,11 @@ def order():
             db.session.delete(order)
             db.session.commit()
 
-            session.pop('orderID', None)
-            return redirect(url_for('view.order'))
+            session['orderStage'] = 'accept'
 
-    print(session['dashID'])
+            session.pop('orderID', None)
+            return redirect(url_for('views.order'))
+
     return render_template(
         'order.html',
         user=current_user,
