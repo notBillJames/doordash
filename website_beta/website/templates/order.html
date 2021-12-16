@@ -3,7 +3,7 @@
 {% block content %}
 {% if stage == 'accept' %}
 <form method="POST">
-    <h3 align="center">Log Order</h3>
+    <h3 align="center">Start Order</h3>
     <div class="form-group">
         <label for="restaurant">Restaurant</label>
         <input
@@ -48,21 +48,28 @@
         <button type="submit" class="btn btn-success" name="orderReceive" value="orderReceive">Accept Order</button>
     </form>
     {% elif stage=='pickup' %}
-    <!--Display the Order Info-->
-    <!--
-    {% for string in strings %}
-        {{ string }}
-    {% endfor %} 
-    -->
     <form method="post">
-        <h3 align="center">Pickup Order</h3>
-        <p>order info goes here...</p>
+        <h3>Current Order</h3>
+        <ul class="list-group list-group-flush" id="notes">
+        {% for string in strings %}
+        <li class="list-group-item">
+            {{ string }}
+          </li>
+        {% endfor %}
+        </ul>
         <button type="submit" class="btn btn-success" name="orderPickup" value="orderPickup">Pickup Order</button>
     </form>
     {% else %}
+    
     <form method="post">
-        <h3 align="center">Deliver Order</h3>
-        <p>Order info goes here...</p>
+        <h3>Current Order</h3>
+        <ul class="list-group list-group-flush" id="notes">
+        {% for string in strings %}
+        <li class="list-group-item">
+            {{ string }}
+          </li>
+        {% endfor %}
+        </ul>
         <button type="submit" class="btn btn-success" name="orderDeliver" value="orderDeliver">Deliver Order</button>
     </form>
     {% endif %}

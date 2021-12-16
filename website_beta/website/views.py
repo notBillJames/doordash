@@ -17,7 +17,7 @@ def dash_started(view):
     def wrapped_view(*args, **kwargs):
         if 'dashID' not in session:
             flash('Start a Dash Session before ordering', category='error')
-            return redirect(url_for('views.start_dashing'))
+            return redirect(url_for('views.dash'))
 
         return view(*args, **kwargs)
 
@@ -46,7 +46,7 @@ def home():
 
 @views.route('/dash', methods=['GET', 'POST'])
 @login_required
-def start_dashing():
+def dash():
     if request.method == 'POST':
         dashLocation = request.form.get('location')
         dashPromo = request.form.get('promo')
@@ -65,7 +65,7 @@ def start_dashing():
 
         return redirect(url_for('views.order'))
 
-    return render_template('start_dashing.html', user=current_user)
+    return render_template('dash.html', user=current_user)
 
 
 @views.route('/order', methods=['GET', 'POST'])
@@ -83,13 +83,15 @@ def order():
                 destination=destination,
                 distance=distance,
                 pay=pay,
-                accept_time=func.now()
+                accept_time=func.now(),
+                user_id=current_user.id,
+                dash_id=session['dashID']
             )
 
             db.session.add(order)
             db.session.commit()
 
-            obj = PendingOrders.query.order_by(PendingOrders.accept_time.desc())
+            obj = PendingOrders.query.filter_by(user_id=current_user.id)
             session['orderID'] = obj.first().id
             session['orderStage'] = 'pickup'
 
@@ -125,12 +127,56 @@ def order():
 
             session.pop('orderID', None)
             return redirect(url_for('views.order'))
+    if session['orderStage'] == 'accept':
+        return render_template(
+            'order.html',
+            user=current_user,
+            stage=session['orderStage']
+        )
+    elif session['orderStage'] == 'pickup':
+        obj = PendingOrders.query.filter_by(user_id=current_user.id).first()
+        restaurant = f'Restaurant: {obj.restaurant}'
+        destination = f'Destination: {obj.destination}'
+        distance = f'Distance: {obj.distance}'
+        pay = f'Pay: ${obj.pay}'
+        accept_time = f'Accept Time: {obj.accept_time.strftime("%I:%M %p")}'
+        strings = [
+            restaurant,
+            destination,
+            distance,
+            pay,
+            accept_time
+        ]
 
-    return render_template(
-        'order.html',
-        user=current_user,
-        stage=session['orderStage']
-    )
+        return render_template(
+            'order.html',
+            user=current_user,
+            stage=session['orderStage'],
+            strings=strings
+        )
+    elif session['orderStage'] == 'deliver':
+        obj = PendingOrders.query.filter_by(user_id=current_user.id).first()
+        restaurant = f'Restaurant: {obj.restaurant}'
+        destination = f'Destination: {obj.destination}'
+        distance = f'Distance: {obj.distance}'
+        pay = f'Pay: ${obj.pay}'
+        accept_time = f'Accept Time: {obj.accept_time.strftime("%I:%M %p")}'
+        pickup_time = f'Pickup Time: {obj.pickup_time.strftime("%I:%M %p")}'
+        strings = [
+            restaurant,
+            destination,
+            distance,
+            pay,
+            accept_time,
+            pickup_time
+        ]
+
+        return render_template(
+            'order.html',
+            user=current_user,
+            stage=session['orderStage'],
+            strings=strings
+        )
 
 
 @views.route('/delete-note', methods=['POST'])
