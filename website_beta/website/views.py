@@ -11,11 +11,11 @@ import functools
 views = Blueprint('views', __name__)
 
 
-def session_started(view):
+def dash_started(view):
     # Wrapper to check if a dashing session has been started
     @functools.wraps(view)
     def wrapped_view(*args, **kwargs):
-        if session['dashStart'] is None:
+        if 'dashID' not in session:
             flash('Start a Dash Session before ordering', category='error')
             return redirect(url_for('views.start_dashing'))
 
@@ -61,16 +61,17 @@ def start_dashing():
 
         dash = Dashes.query.order_by(Dashes.start.desc())
         session['dashID'] = dash.first().id
+        session['orderStage'] = 'accept'
 
-        return redirect(url_for('views.log_order'))
+        return redirect(url_for('views.order'))
 
     return render_template('start_dashing.html', user=current_user)
 
 
 @views.route('/order', methods=['GET', 'POST'])
 @login_required
-@session_started
-def log_order():
+@dash_started
+def order():
     if request.method == 'POST':
         if request.form['orderReceive']:
             restaurant = request.form.get('restaurant')
@@ -90,16 +91,47 @@ def log_order():
 
             obj = PendingOrders.query.order_by(PendingOrders.accept_time.desc())
             session['orderID'] = obj.first().id
-            print(session['orderID'])
 
-            return redirect(url_for('views.pickup_order'))
+            return redirect(url_for('views.order'))
+        
+        elif request.form['orderPickup']:
+            order = PendingOrders.query.filter_by(id=session['orderID']).first()
+            order.pickup_time = func.now()
+            db.session.commit()
 
-    return render_template('log_order.html', user=current_user)
+            return redirect(url_for('views.deliver_order'))
+        elif request.form['orderDeliver']:
+            order = PendingOrders.query.filter_by(id=session['orderID']).first()
+            new_order = Orders(
+                restaurant=order.restaurant,
+                destination=order.destination,
+                distance=order.distance,
+                pay=order.distance,
+                accept_time=order.accept_time,
+                pickup_time=order.pickup_time,
+                dropoff_time=func.now(),
+                user_id=current_user.id,
+                dash_id=session['dashID']
+            )
+
+            db.session.add(new_order)
+            db.session.delete(order)
+            db.session.commit()
+
+            session.pop('orderID', None)
+            return redirect(url_for('view.order'))
+
+    print(session['dashID'])
+    return render_template(
+        'order.html',
+        user=current_user,
+        stage=session['orderStage']
+    )
 
 
 @views.route('/pickup-order', methods=['GET', 'POST'])
 @login_required
-@session_started
+@dash_started
 def pickup_order():
     if request.method == 'POST':
         order = PendingOrders.query.filter_by(id=session['orderID']).first()
@@ -107,12 +139,13 @@ def pickup_order():
         db.session.commit()
 
         return redirect(url_for('views.deliver_order'))
+
     return render_template('pickup_order.html', user=current_user)
 
 
 @views.route('/deliver-order', methods=['GET', 'POST'])
 @login_required
-@session_started
+@dash_started
 def deliver_order():
     if request.method == 'POST':
         order = PendingOrders.query.filter_by(id=session['orderID']).first()
@@ -132,6 +165,7 @@ def deliver_order():
         db.session.delete(order)
         db.session.commit()
 
+        session.pop('orderID', None)
         return redirect(url_for('views.home'))
     return render_template('deliver_order.html', user=current_user)
 
