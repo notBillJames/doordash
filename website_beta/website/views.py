@@ -16,7 +16,10 @@ def dash_started(view):
     @functools.wraps(view)
     def wrapped_view(*args, **kwargs):
         if 'dashID' not in session:
-            flash('Start a Dash Session before ordering', category='error')
+            flash(
+                'Start a Dash Session before Logging Orders',
+                category='error'
+            )
             return redirect(url_for('views.dash'))
 
         return view(*args, **kwargs)
@@ -40,7 +43,6 @@ def home():
             db.session.add(new_note)
             db.session.commit()
             flash('Note added', category='success')
-
     return render_template('home.html', user=current_user)
 
 
@@ -48,25 +50,70 @@ def home():
 @login_required
 def dash():
     if request.method == 'POST':
-        dashLocation = request.form.get('location')
-        dashPromo = request.form.get('promo')
+        if request.form.get('startDash'):
+            dashLocation = request.form.get('location')
+            dashPromo = request.form.get('promo')
 
-        dash = Dashes(
-            start=func.now(),
-            location=dashLocation,
-            promo=dashPromo
+            dash = Dashes(
+                start=func.now(),
+                location=dashLocation,
+                promo=dashPromo,
+                user_id=current_user.id
+            )
+            db.session.add(dash)
+            db.session.commit()
+
+            user_dashes = Dashes.query.filter_by(user_id=current_user.id)
+            current_dash = user_dashes.order_by(Dashes.start.desc())
+            session['dashID'] = current_dash.first().id
+            session['dashStage'] = 'dashing'
+            session['orderStage'] = 'accept'
+
+            return redirect(url_for('views.dash'))
+        if request.form.get('endDashing'):
+            current_dash = Dashes.query.filter_by(id=session['dashID']).first()
+            current_dash.end = func.now()
+            
+            db.session.commit()
+            session['dashID'] = 'ending'
+            
+            return redirect(url_for('views.dash'))
+        if request.form.get('commitDashing'):
+            current_dash = Dashes.query.filter_by(id=session['dashID']).first()
+            orders = current_dash.orders
+            total_pay = orders.query(func.sum()(orders.pay))
+            
+            
+
+            return redirect(url_for('views.dash'))
+
+    if 'dashID' not in session:
+        # on dashID means session has not been started,
+        # stage should be "starting"
+        return render_template(
+            'dash.html',
+            user=current_user,
+            stage='starting'
         )
-        db.session.add(dash)
-        db.session.commit()
-
-        dash = Dashes.query.order_by(Dashes.start.desc())
-        session['dashID'] = dash.first().id
-        session['orderStage'] = 'accept'
-
-        return redirect(url_for('views.order'))
-
-    return render_template('dash.html', user=current_user)
-
+    elif session['dashStage'] == 'dashing':
+        # FIXME
+        # add information to display with
+        return render_template(
+            'dash.html',
+            user=current_user,
+            stage='dashing',
+            strings=strings
+        )
+    elif session['dashStage'] == 'ending':
+        # FIXME
+        # should have info strings and add forms to finish dash
+        return render_template(
+            'dash.html',
+            user=current_user,
+            stage='ending',
+            strings=strings
+        )
+    
 
 @views.route('/order', methods=['GET', 'POST'])
 @login_required

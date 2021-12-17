@@ -1,6 +1,7 @@
 {% extends "base.html" %} 
 {% block title %}Dash{% endblock %} 
 {% block content %}
+{% if stage == 'starting' %}
     <form method="POST">
       <h3 align="center">Start Dashing</h3>
       <div class="form-group">
@@ -24,7 +25,48 @@
         />
       </div>
       <div class="form-group">
-        <button type="submit" class="btn btn-primary" name="startDash" value="startDash">Start Dashing</button>
+        <button type="submit" class="btn btn-success" name="startDash" value="startDash">Start Dashing</button>
       </div>
     </form>
+{% elif stage == 'dashing' %}
+    <form method="post">
+        <h3>Current Dash</h3>
+        <ul class="list-group list-group-flush" id="notes">
+        {% for string in strings %}
+        <li class="list-group-item">
+            {{ string }}
+        </li>
+        {% endfor %}
+        </ul>
+        <button type="submit" class="btn btn-danger" name="endDashing" value="endDashing">Finish Dashing</button>
+    </form>
+{% else %}
+    <form method="post">
+        <h3>Current Dash</h3>
+        <ul class="list-group list-group-flush" id="notes">
+        {% for string in strings %}
+        <li class="list-group-item">
+            {{ string }}
+        </li>
+        {% endfor %}
+        </ul>
+        <label for="gas_cost">Total Gas Cost</label>
+        <input
+          type="text"
+          class="form-control"
+          id="gas_cost"
+          name="gas_cost"
+          placeholder="Enter a Dollar Amount"
+        />
+        <label for="total_miles">Total Miles</label>
+        <input
+            type="text"
+            class="form-control"
+            id="total_miles"
+            name="total_miles"
+            placeholder="Enter the Number of Miles Driven"
+        />
+        <button type="submit" class="btn btn-danger" name="commitDashing" value="commitDashing">Finish Dashing</button>
+    </form>
+{% endif %}
 {% endblock %}
