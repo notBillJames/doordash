@@ -1,3 +1,4 @@
+from typing import _promote
 from flask import Blueprint, render_template, flash, request, session, jsonify
 from flask.helpers import url_for
 from flask_login import login_required, current_user
@@ -73,17 +74,20 @@ def dash():
         if request.form.get('endDashing'):
             current_dash = Dashes.query.filter_by(id=session['dashID']).first()
             current_dash.end = func.now()
-            
+
             db.session.commit()
             session['dashID'] = 'ending'
-            
+
             return redirect(url_for('views.dash'))
         if request.form.get('commitDashing'):
             current_dash = Dashes.query.filter_by(id=session['dashID']).first()
             orders = current_dash.orders
-            total_pay = orders.query(func.sum()(orders.pay))
-            
-            
+            current_dash.end = func.now()
+            current_dash.total_pay = orders.query(func.sum(orders.pay))
+            current_dash.gas_cost = request.form.get('gas_cost')
+            current_dash.total_miles = request.form.get('total_miles')
+
+            db.session.commit()
 
             return redirect(url_for('views.dash'))
 
@@ -98,6 +102,14 @@ def dash():
     elif session['dashStage'] == 'dashing':
         # FIXME
         # add information to display with
+        current_dash = Dashes.query.filter_by(id=session['dashID']).first()
+        orders = current_dash.orders
+        location = f'Location: {current_dash.location.title()}'
+        start = f'Start Time: {current_dash.start.strftime("%I:%M %p")}'
+        promo = f'Promo: ${current_dash.promo}/order'
+        pay_gross = orders.query(func.sum(orders.pay))
+        pay = f'Pay this session: ${pay_gross}'
+        strings = [location, start, promo, pay]
         return render_template(
             'dash.html',
             user=current_user,
@@ -107,6 +119,8 @@ def dash():
     elif session['dashStage'] == 'ending':
         # FIXME
         # should have info strings and add forms to finish dash
+        current_dash = Dashes.query.filter_by(id=session['dashID']).first()
+        
         return render_template(
             'dash.html',
             user=current_user,
